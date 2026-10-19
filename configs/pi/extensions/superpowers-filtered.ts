@@ -17,16 +17,17 @@
 // 3. PI_SUPERPOWERS=0 in the environment (pi-local.ps1 -Lite) -> register nothing (no bootstrap).
 //
 // Installed as ~/.pi/agent/extensions/superpowers-filtered.ts; the import below is relative to that folder.
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import superpowers from "../git/github.com/obra/superpowers/.pi/extensions/superpowers.ts";
 
 const DROPPED = new Set(["resources_discover", "agent_end"]);
 
-export default function superpowersFiltered(pi: any) {
+export default function superpowersFiltered(pi: ExtensionAPI) {
 	if (process.env.PI_SUPERPOWERS === "0") return;
-	const api = Object.create(pi);
-	api.on = (event: string, handler: unknown) => {
+	const api: ExtensionAPI = Object.create(pi);
+	api.on = ((event: string, handler: unknown) => {
 		if (DROPPED.has(event)) return;
-		return pi.on(event, handler);
-	};
+		return (pi.on as (e: string, h: unknown) => void)(event, handler);
+	}) as ExtensionAPI["on"];
 	return superpowers(api);
 }

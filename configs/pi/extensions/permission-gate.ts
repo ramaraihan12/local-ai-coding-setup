@@ -1054,6 +1054,18 @@ const LABEL: Record<string, string> = {
 	"outside-cwd": "outside the working folder",
 };
 
+// The parts of Pi's tool_call event and context this gate reads.
+interface ToolCallEvent {
+	toolName: string;
+	input?: Record<string, unknown>;
+}
+interface GateContext {
+	cwd?: string;
+	mode?: string;
+	hasUI?: boolean;
+	ui: { select(title: string, options: string[]): Promise<string | undefined> };
+}
+
 export default function permissionGate(pi: ExtensionAPI) {
 	if (isGateOff(process.env.PI_GATE)) {
 		pi.on("session_start", async () => {
@@ -1066,7 +1078,7 @@ export default function permissionGate(pi: ExtensionAPI) {
 	pi.on("session_start", async () => {
 		allowed.clear();
 	});
-	pi.on("tool_call", async (event: any, ctx: any) => {
+	pi.on("tool_call", async (event: ToolCallEvent, ctx: GateContext) => {
 		const { hits, summary } = checkToolCall(String(event.toolName), (event.input ?? {}) as Record<string, unknown>, ctx?.cwd ?? process.cwd());
 		if (!hits.length) return undefined;
 		const cats = [...new Set(hits.map((h) => h.category))].join(",");
