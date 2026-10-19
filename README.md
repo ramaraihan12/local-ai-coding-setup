@@ -4,8 +4,8 @@
 
 The free, fully local AI coding setup I run every day on my ASUS TUF A15 (FA506QM): Ryzen 9 5900HX, RTX 3060 Laptop
 6 GB, 16 GB RAM, Windows 11. A coding agent in the terminal plus autocomplete in VS Code, with no subscription and no
-cloud model. This is the cleaned-up public version: scripts, configs and measurements. The models (about 28 GiB) live
-outside the repo, in `C:\AI` by default.
+cloud model. This is the cleaned-up public version: scripts, configs and measurements. The models (about 17 GiB, 28
+with the optional Qwen3.6) live outside the repo, in `C:\AI` by default.
 
 ## How it works
 
@@ -77,6 +77,8 @@ Ollama 0.40.1, Pi 1.1.0, llama-vscode 0.0.68. Models and llama.cpp go under `C:\
    hf download unsloth/Qwen3.5-9B-GGUF --include "Qwen3.5-9B-IQ4_XS.gguf" --local-dir "$G\unsloth\Qwen3.5-9B-GGUF"
    hf download ggml-org/Qwen2.5-Coder-0.5B-Q8_0-GGUF --include "qwen2.5-coder-0.5b-q8_0.gguf" --local-dir "$G\ggml-org\Qwen2.5-Coder-0.5B-Q8_0-GGUF"
    hf download ggml-org/Qwen2.5-Coder-1.5B-Q8_0-GGUF --include "qwen2.5-coder-1.5b-q8_0.gguf" --local-dir "$G\ggml-org\Qwen2.5-Coder-1.5B-Q8_0-GGUF"
+   # optional, only for -Preset qwen36
+   hf download unsloth/Qwen3.6-35B-A3B-GGUF --include "Qwen3.6-35B-A3B-UD-IQ2_M.gguf" --local-dir "$G\unsloth\Qwen3.6-35B-A3B-GGUF"
    ```
 3. Install Ollama (`winget install --id Ollama.Ollama -e`), turn off its autostart, set `OLLAMA_MODELS=C:\AI\models\ollama`,
    then `ollama create qwen3.5-9b:iq4xs -f configs\ollama\Modelfile.qwen35-9b`.

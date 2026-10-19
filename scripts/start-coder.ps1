@@ -3,7 +3,7 @@
 
   Examples:
     .\start-coder.ps1                          # default gemma: gemma-4-26B-A4B, ncmoe 24, reasoning off
-    .\start-coder.ps1 -Preset qwen36           # Qwen3.6-35B-A3B UD-IQ2_M, ncmoe 28, ctx 65536, -lm none (FIM on CPU)
+    .\start-coder.ps1 -Preset qwen36           # Qwen3.6-35B-A3B UD-IQ2_M, ncmoe 28, ctx 65536, -lm none (optional download)
     .\start-coder.ps1 -Preset qwen36 -FimGpu   # same, but ncmoe 35 (the 1.5B FIM takes ~2 GB of VRAM)
     .\start-coder.ps1 -Preset gptoss           # gpt-oss-20b, ncmoe 17 (not in the default download list)
     .\start-coder.ps1 -Preset qwen9b -Ctx 8192 # Qwen3.5-9B fully on the GPU
@@ -64,7 +64,9 @@ $presetVals = @{
 $p = if ($Preset) { $Preset } else { 'gemma' }
 # Presets whose GGUF is not in the normal download list (the script still knows them)
 $optionalPresets = @{
-    gptoss = 'is not in the default download list (it went 0/4 in the A/B test). Download it (12.1 GB) with:' +
+    qwen36 = 'is an optional download (kept for comparison). Download it (11.5 GB) with:' +
+             "`n       hf download unsloth/Qwen3.6-35B-A3B-GGUF --include `"Qwen3.6-35B-A3B-UD-IQ2_M.gguf`" --local-dir `"$G\unsloth\Qwen3.6-35B-A3B-GGUF`""
+    gptoss ='is not in the default download list (it went 0/4 in the A/B test). Download it (12.1 GB) with:' +
              "`n       hf download ggml-org/gpt-oss-20b-GGUF --include `"gpt-oss-20b-MXFP4.gguf`" --local-dir `"$G\ggml-org\gpt-oss-20b-GGUF`""
 }
 if (-not $PSBoundParameters.ContainsKey('Model'))     { $Model     = $modelPaths[$p] }
