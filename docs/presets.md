@@ -79,12 +79,11 @@ are trained for chat and break fill-in-the-middle output. `start-agent.ps1` star
 
 ## Ollama
 
-Ollama only serves the 9B fast model (`ai-pi -Fast`) and an embedding model. It never autostarts.
+Ollama only serves the 9B fast model (`ai-pi -Fast`). It never autostarts.
 
 - `Modelfile.qwen35-9b` builds `qwen3.5-9b:iq4xs` from the same GGUF. Ollama's own fit keeps a 1024 MiB margin and
   only put 23 of 33 layers on the GPU (15-19 tok/s). `num_gpu 99` forces all layers: 5317 MiB at 32K context,
   ~56-57 tok/s. It needs an empty GPU, so stop llama-server first.
-- `Modelfile.embed-cpu` pins `qwen3-embedding:0.6b` to the CPU (`num_gpu 0`) so it never competes for VRAM.
 - User environment I set: `OLLAMA_MODELS=C:\AI\models\ollama`, `OLLAMA_CONTEXT_LENGTH=32768`,
   `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_NUM_PARALLEL=1`, `OLLAMA_MAX_LOADED_MODELS=2`.
   Changing "Model location" or "Context length" in the Ollama GUI overwrites those, so I leave the GUI alone.

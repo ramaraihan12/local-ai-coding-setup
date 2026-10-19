@@ -70,7 +70,7 @@ Ollama 0.40.1, Pi 1.1.0, llama-vscode 0.0.68. Models and llama.cpp go under `C:\
 
 1. Unzip `llama-b11429-bin-win-cuda-12.4-x64.zip` and `cudart-llama-bin-win-cuda-12.4-x64.zip` from the llama.cpp
    release tag `b11429` into `C:\AI\llama.cpp`.
-2. Download the models with the `hf` CLI ([checksums](docs/presets.md#files-and-checksums)):
+2. Install the `hf` CLI (`uv tool install huggingface_hub`) and download the models ([checksums](docs/presets.md#files-and-checksums)):
    ```powershell
    $G = "C:\AI\models\gguf"
    hf download unsloth/gemma-4-26B-A4B-it-GGUF --include "gemma-4-26B-A4B-it-UD-IQ3_S.gguf" --local-dir "$G\unsloth\gemma-4-26B-A4B-it-GGUF"
@@ -81,10 +81,11 @@ Ollama 0.40.1, Pi 1.1.0, llama-vscode 0.0.68. Models and llama.cpp go under `C:\
    hf download unsloth/Qwen3.6-35B-A3B-GGUF --include "Qwen3.6-35B-A3B-UD-IQ2_M.gguf" --local-dir "$G\unsloth\Qwen3.6-35B-A3B-GGUF"
    ```
 3. Install Ollama (`winget install --id Ollama.Ollama -e`), turn off its autostart, set `OLLAMA_MODELS=C:\AI\models\ollama`,
-   then `ollama create qwen3.5-9b:iq4xs -f configs\ollama\Modelfile.qwen35-9b`.
+   then `ollama create qwen3.5-9b:iq4xs -f configs\ollama\Modelfile.qwen35-9b` (edit `FROM` in it first
+   if `AI_ROOT` isn't `C:\AI`).
 4. Optional: add `llama-server.exe` and `llama-bench.exe` in NVIDIA Control Panel > Program Settings once, then
    `python -I scripts\nvidia-sysmem.py --apply` (`--check` only reads).
-5. Pi: `npm i -g @earendil-works/pi-coding-agent@1.1.0`, ripgrep and fd from winget, then
+5. Pi: `npm i -g @earendil-works/pi-coding-agent@1.1.0`, `winget install BurntSushi.ripgrep.MSVC sharkdp.fd`, then
    `pi install git:github.com/obra/superpowers@v7.0.0` and copy the config:
    ```powershell
    $A = "$env:USERPROFILE\.pi\agent"; New-Item -ItemType Directory -Force $A | Out-Null
@@ -111,7 +112,7 @@ ai-off           # stop everything; VRAM should read 0 MiB
 
 The shortcuts wrap `start-agent.ps1`, `start-fast.ps1`, `pi-local.ps1`, `status-ai.ps1` and `stop-ai.ps1 -All`.
 `ai-on -Preset qwen36` and `ai-on -FimGpu` switch the model or move autocomplete to the GPU. `-DryRun` on any start
-script prints what it would run without starting anything. Inside Pi, `/research <question>` and
+script prints the command without starting anything, even without llama.cpp installed. Inside Pi, `/research <question>` and
 `/docs <library> <question>` are prompt templates for web research and library docs.
 
 ## Tests
@@ -131,8 +132,7 @@ in `PSScriptAnalyzerSettings.psd1`) and dry runs of the start scripts.
 - The 9B is about 4x faster per task, but it left a bug that passed the tests (an attribute with the wrong
   namespace, so `fillable` was empty) and answered a "latest PHP version" question wrongly after searching. I use
   it for small things and review everything it writes.
-- Thinking can eat the whole 8192-token output budget before any edit. Qwen3.6 failed an A/B task that way, and
-  Gemma did it once in a later run. Pi's bash also doesn't close stdin, so a command that waits for input hangs
+- Thinking can eat the whole 8192-token output budget before any edit. Qwen3.6 failed an A/B task that way. Pi's bash also doesn't close stdin, so a command that waits for input hangs
   until the timeout.
 - "Local" means the models. Context7 docs and web search in Pi go over the network (`-Lite` turns them off), and
   the permission gate is an emergency brake against prompt injection, not a sandbox.

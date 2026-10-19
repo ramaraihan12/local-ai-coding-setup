@@ -14,7 +14,7 @@ there badly or not at all. See [presets.md](presets.md) for how the numbers were
 
 ## Ollama on the side
 
-Ollama is still the easiest way to serve the 9B fast model and an embedding model, and other tools talk to it out of
+Ollama is still the easiest way to serve the 9B fast model, and other tools talk to it out of
 the box. It runs only when something needs it: the scripts start it through Explorer on demand and `ai-off` closes
 it again.
 

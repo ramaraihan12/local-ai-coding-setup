@@ -6,7 +6,7 @@
   Examples:
     .\stop-ai.ps1
     .\stop-ai.ps1 -All          # everything off, including the Ollama tray app
-    .\stop-ai.ps1 -KeepOllama   # llama-server only, Ollama models (e.g. embed-cpu) stay loaded
+    .\stop-ai.ps1 -KeepOllama   # llama-server only, Ollama models stay loaded
 #>
 [CmdletBinding()]
 param([switch]$KeepOllama, [switch]$All)
