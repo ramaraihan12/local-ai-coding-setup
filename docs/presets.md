@@ -100,3 +100,17 @@ Ollama only serves the 9B fast model (`ai-pi -Fast`) and an embedding model. It 
   for both providers: llama.cpp gets it through `chat_template_kwargs`, Ollama through `reasoning_effort: "none"`.
 - Thinking can use the whole 8192-token output budget before the model edits anything. Raising the budget to 16384
   didn't help in the A/B test.
+
+## Files and checksums
+
+Sizes and SHA256 from the Hugging Face API, matched after download. Check one with
+`(Get-FileHash <file>).Hash`.
+
+| Repo | File | Bytes | SHA256 |
+|---|---|---:|---|
+| unsloth/gemma-4-26B-A4B-it-GGUF | gemma-4-26B-A4B-it-UD-IQ3_S.gguf | 11,289,671,136 | `878be93f9c238ea853b3fd1eb602637ce3cf1cddea56dc345d9a7bf2d6093e29` |
+| unsloth/Qwen3.6-35B-A3B-GGUF | Qwen3.6-35B-A3B-UD-IQ2_M.gguf | 11,522,702,304 | `2be7ef1ed7e1af8b10d3829102cf9a6c2bd5ddb64d675b4ece23a60799403d43` |
+| unsloth/Qwen3.5-9B-GGUF | Qwen3.5-9B-IQ4_XS.gguf | 5,168,653,536 | `7e918aeca06c52bcb528ea6b04b4ec957e75ee8c0a73138854c0dfcf371ea429` |
+| ggml-org/Qwen2.5-Coder-1.5B-Q8_0-GGUF | qwen2.5-coder-1.5b-q8_0.gguf | 1,646,573,056 | `29871c94d15727a6e243f79a37113d4ae625a6215b5e800bf41a23af2da32832` |
+| ggml-org/Qwen2.5-Coder-0.5B-Q8_0-GGUF | qwen2.5-coder-0.5b-q8_0.gguf | 531,068,128 | `d0f8cd6c49bab52a0abdbe47948518b1f4d9b1a8a2a6825099cea31cea10ac56` |
+| ggml-org/gpt-oss-20b-GGUF (optional) | gpt-oss-20b-MXFP4.gguf | 12,109,566,624 | `27cd6c432c7672cb812a92f611cf3ba7bbc35928262bb1e1253ff4ee6ae35901` |
