@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CONTEXT7_API_KEY}"
+      },
+      "exposure": "direct",
+      "description": "Up-to-date documentation and code examples for libraries, frameworks, SDKs and APIs. Use it when you need the current API, configuration or version-specific usage of a library instead of relying on memory."
+    },
+    "web": {
+      "command": "~/AppData/Roaming/uv/tools/duckduckgo-mcp-server/Scripts/python.exe",
+      "args": [
+        "-I",
+        "~/.pi/agent/mcp-servers/web_search.py",
+        "--ref-url-threshold", "0",
+        "--parse-mode", "markdown",
+        "--fetch-backend", "auto"
+      ],
+      "exposure": "direct",
+      "toolExposure": {
+        "expand_link": "hidden"
+      },
+      "description": "Web search and page fetch (length-limited, paginated). Use for error messages, recent releases, news and facts not covered by library docs."
+    }
+  }
+}
