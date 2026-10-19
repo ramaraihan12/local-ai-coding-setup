@@ -1,0 +1,17 @@
+# ollama create qwen3.5-9b:iq4xs -f configs\ollama\Modelfile.qwen35-9b
+# Ollama does not expand variables here: change FROM if your AI_ROOT is not C:\AI.
+# Template/tools: RENDERER+PARSER "qwen3.5" (and TEMPLATE {{ .Prompt }}) copied from the official ollama.com library/qwen3.5:9b config/template blobs.
+# Sampling: unsloth/Qwen3.5-9B-GGUF model card, "Thinking mode for precise coding tasks" (temp 0.6, top_p 0.95, top_k 20, min_p 0, presence_penalty 0, repetition_penalty 1.0).
+FROM C:\AI\models\gguf\unsloth\Qwen3.5-9B-GGUF\Qwen3.5-9B-IQ4_XS.gguf
+TEMPLATE {{ .Prompt }}
+RENDERER qwen3.5
+PARSER qwen3.5
+PARAMETER num_ctx 32768
+# num_gpu 99: skip Ollama's fit step (it keeps a 1024 MiB VRAM margin -> only 23/33 layers, ~15-19 tok/s); all 33 layers fit at 32K (5317 MiB, ~56 tok/s). Needs a free GPU (stop llama-server first).
+PARAMETER num_gpu 99
+PARAMETER temperature 0.6
+PARAMETER top_p 0.95
+PARAMETER top_k 20
+PARAMETER min_p 0
+PARAMETER presence_penalty 0
+PARAMETER repeat_penalty 1

@@ -1,0 +1,4 @@
+{
+  "llama-vscode.endpoint": "http://127.0.0.1:8012",
+  "llama-vscode.ask_install_llamacpp": false
+}
