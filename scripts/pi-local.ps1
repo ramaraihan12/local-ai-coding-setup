@@ -1,62 +1,20 @@
 <#
-  pi-local.ps1 - run the Pi coding agent with local models ONLY.
-    default : llamacpp/local          (llama-server http://127.0.0.1:8080, start-agent.ps1)
-    -Fast   : ollama/qwen3.5-9b:iq4xs (Ollama http://127.0.0.1:11434; the Ollama app is started through
-              Explorer when it isn't running - lib-ollama.ps1)
-  Every other argument goes to `pi` untouched (working directory = current directory).
+  pi-local.ps1 - run the Pi coding agent against the local models only.
 
-  Skills (set in ~/.pi/agent/settings.json, copy of configs/pi/settings.json):
-    default : ONLY 9 Superpowers skills (package git:github.com/obra/superpowers@v7.0.0, filtered in
-              "packages") + the using-superpowers bootstrap in EVERY request (stable prefix) from the
-              ~/.pi/agent/extensions/superpowers-filtered.ts extension. ~/.agents/skills (shared with
-              other tools, ~3.9K tokens) is switched off with "skills": ["!**/.agents/skills/**"].
-    -Skills : all of them = --skill <package>/skills (15 Superpowers v7 skills) + --skill ~/.agents/skills
-              (the rest; duplicate names from older copies lose -> collision warning, not doubled).
-    -Lite   : lean mode for quick tasks = --no-skills --no-mcp + PI_SUPERPOWERS=0 (the wrapper skips the
-              bootstrap). Built-in tools and AGENTS.md stay; /research and /docs need MCP, so use the
-              default mode for those. First request ~2.4K vs ~6.5K tokens (chars/4).
-  MCP: ~/.pi/agent/mcp.json (copy of configs/pi/mcp.json), direct exposure:
-    context7 : library docs (remote). CONTEXT7_API_KEY is NOT hidden; when it is empty in this process it
-               is read from the User environment. Still empty: yellow warning + a " " value for the pi
-               process only (Pi rejects a header with an empty variable; Context7 accepts "Bearer" without
-               a token as anonymous, with a lower rate limit).
-    web      : search + fetch_content, one local Python process (~80-105 MB): duckduckgo-mcp-server 0.7.0
-               (uv tool) + ~/.pi/agent/mcp-servers/web_search.py (search through ddgs; fetch capped at
-               16K characters, local/private addresses refused).
-    Sessions get --exclude-tools list_mcp_resources,list_mcp_resource_templates,read_mcp_resource
-    (both servers advertise "resources" but have none; drop this once one of them does).
-  Prompt templates: /research <question> (step-by-step web research with a notes file under research/) and
-    /docs <library> <question> (forces Context7). Files: ~/.pi/agent/prompts/ (copy of configs/pi/prompts/).
-  Permission gate (every mode, including -Lite/-Fast): ~/.pi/agent/extensions/permission-gate.ts
-    (copy of configs/pi/extensions/, tests: node tests/permission-gate.test.mjs).
-    Before a tool runs: risky bash/powershell (outbound network: git push, ssh/scp, gh writes, curl sending
-    data, curl|sh, iex; destructive: rm -r/-f, Remove-Item -Recurse, git reset --hard/clean -f; database:
-    migrate:fresh/rollback, db:wipe, --force, DROP/TRUNCATE; secrets: .ssh, env, $..KEY; system: sudo,
-    registry, Startup, setx, schtasks, global installs) and write/edit outside the working folder or to
-    .env*/.ssh/profile/Startup/.git/hooks/.pi -> TUI: Deny / Allow once / Allow this pattern for this
-    session. Without a UI (-p, --mode json) it is BLOCKED and the model is told to ask the user.
-    Decision log: ~/.pi/agent/gate.log. Turn it off ONLY for automated harnesses in a throwaway clone:
-    $env:PI_GATE = 'off' before running this script (the launcher prints a yellow warning).
+    .\pi-local.ps1           llama-server on :8080 (start-agent.ps1)
+    .\pi-local.ps1 -Fast     Ollama on :11434, qwen3.5-9b:iq4xs (started on demand, see lib-ollama.ps1)
+    .\pi-local.ps1 -Lite     no skills, no MCP, no Superpowers bootstrap: a smaller first request
+    .\pi-local.ps1 -Skills   load every skill instead of the filtered Superpowers set
+    .\pi-local.ps1 -c        anything else goes to `pi` as is (-c, -p "...", mcp list, --list-models)
 
-  Examples:
-    .\pi-local.ps1
-    .\pi-local.ps1 -Fast
-    .\pi-local.ps1 -Lite                       # no skills/bootstrap/MCP (quick tasks)
-    .\pi-local.ps1 -Skills                     # every skill (full Superpowers + ~/.agents/skills)
-    .\pi-local.ps1 mcp list                    # check the context7 + web connections (no model server check)
-    .\pi-local.ps1 --no-mcp                    # no MCP for one run
-    .\pi-local.ps1 -c                          # continue the last session (pi --continue)
-    .\pi-local.ps1 -p "Summarize this repo"    # one shot, no TUI
-    .\pi-local.ps1 --list-models               # no server check
+  While pi runs: PI_OFFLINE=1, telemetry and version checks off, and cloud API keys hidden from the process
+  (CONTEXT7_API_KEY stays; if it is empty a placeholder is set, Context7 then runs anonymously). Everything is
+  restored when pi exits. The permission gate extension is active in every mode; `$env:PI_GATE = 'off'` turns
+  it off, only for throwaway clones.
 
-  Notes:
-    - Deliberately NO param() block, so pi's short flags (-c, -p, -r ...) are not captured by PowerShell
-      (it binds unique prefixes, so -s would become -Skills). Only the exact words "-Fast", "-Skills" and
-      "-Lite" are ours.
-    - While pi runs: PI_OFFLINE=1, PI_SKIP_VERSION_CHECK=1, PI_TELEMETRY=0, and every cloud credential
-      (*_API_KEY except CONTEXT7_API_KEY, Anthropic/Copilot/HF/AWS tokens) is hidden from the pi process
-      (and from any bash command the model runs). All of it is restored when pi exits. PI_OFFLINE does
-      not block MCP (Context7 stays connected).
+  There is no param() block on purpose: PowerShell would bind pi's short flags to our switches by prefix
+  (-s would become -Skills). Only the exact words -Fast, -Skills and -Lite are ours.
+  Config and the prompt sizes per mode are described in docs/why-this-stack.md.
 #>
 
 $ErrorActionPreference = 'Stop'

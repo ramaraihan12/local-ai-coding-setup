@@ -1,24 +1,15 @@
 <#
   ai-shortcuts.ps1 - short commands for the PowerShell profile (pwsh 7 and Windows PowerShell 5.1).
 
-  Load it from $PROFILE (one line):
-    $aiShortcuts = '<clone>\scripts\ai-shortcuts.ps1'; if (Test-Path -LiteralPath $aiShortcuts) { . $aiShortcuts }
+  Load it from $PROFILE:
+    $s = '<clone>\scripts\ai-shortcuts.ps1'; if (Test-Path -LiteralPath $s) { . $s }
 
-  This file ONLY defines functions. Dot-sourcing it starts no server, makes no network call and prints
-  nothing (except a warning when a command name is already taken). There is NO AUTOSTART: the AI is
-  started by hand (ai-on / ai-fast) and stopped with ai-off before gaming.
+  It only defines functions: nothing starts, nothing is printed, nothing autostarts. Commands: ai-on, ai-fast,
+  ai-off, ai-status, ai-pi, ai-help. Arguments pass straight through to the start-*.ps1 and pi-local.ps1
+  scripts. A name that is already taken by another command is skipped with a warning.
 
-  Commands : ai-on, ai-fast, ai-off, ai-status, ai-pi, ai-help   (type ai-help)
-  Helpers  : Get-LocalAiScript, Test-LocalAiHealth, Test-LocalAiSwitch, Get-LocalAiModel, Wait-LocalAiReady
-
-  Implementation notes:
-  - The scripts folder comes from the file that defines the function ($MyInvocation.MyCommand.ScriptBlock.File).
-    $script:... variables are not used because they are empty when a function is called from another
-    script (dynamic scoping).
-  - Arguments are passed on with @args splatting, so -FimGpu/-DryRun/-Preset (start-*.ps1) and
-    -c, -p "...", --thinking off, -Fast (pi-local.ps1) arrive intact.
-  - Names already used by another alias or function are NOT overwritten (a warning is shown and that
-    function is skipped). Dot-sourcing this file again is safe (its own functions may be redefined).
+  The functions find the scripts folder through $MyInvocation.MyCommand.ScriptBlock.File, because $script:
+  variables are empty when a function is called from another script.
 #>
 
 & {
