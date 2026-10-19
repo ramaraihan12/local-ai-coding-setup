@@ -40,6 +40,7 @@ param(
 )
 
 . (Join-Path $PSScriptRoot 'env.ps1')
+. (Join-Path $PSScriptRoot 'lib-launch.ps1')
 
 $modelPaths = @{
     qwen36 = [IO.Path]::Combine($G, 'unsloth\Qwen3.6-35B-A3B-GGUF\Qwen3.6-35B-A3B-UD-IQ2_M.gguf')
@@ -85,30 +86,13 @@ if (-not $PSBoundParameters.ContainsKey('LoadMode')) {
     $LoadMode = if ($PSBoundParameters.ContainsKey('Model')) { 'auto' } else { $presetVals[$p].LoadMode }
 }
 
-function Stop-WithError([string]$Msg) {
-    Write-Host "FAILED: $Msg" -ForegroundColor Red
-    exit 1
-}
-
 # --- Preflight ---
 $exe = [IO.Path]::Combine($L, 'llama-server.exe')
-if (-not (Test-Path -LiteralPath $exe)) { Stop-WithError "llama-server not found: $exe" }
-if (-not (Test-Path -LiteralPath $Model)) {
-    if (-not $PSBoundParameters.ContainsKey('Model') -and $optionalPresets.ContainsKey($p)) {
-        Stop-WithError "model file for preset $p not found: $Model`n       Preset $p $($optionalPresets[$p])"
-    }
-    Stop-WithError "model file missing: $Model`n       (still downloading? the hf download commands are in the README)"
+$hint = '(still downloading? the hf download commands are in the README)'
+if (-not $PSBoundParameters.ContainsKey('Model') -and $optionalPresets.ContainsKey($p)) {
+    $hint = "Preset $p $($optionalPresets[$p])"
 }
-$busy = [Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners() |
-    Where-Object { $_.Port -eq $Port }
-if ($busy) {
-    $owner = ''
-    try {
-        $c = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction Stop | Select-Object -First 1
-        $owner = " by $((Get-Process -Id $c.OwningProcess -ErrorAction Stop).ProcessName) (PID $($c.OwningProcess))"
-    } catch {}
-    Stop-WithError "port $Port is already in use$owner. Run stop-ai.ps1 first or pick another -Port."
-}
+Assert-LaunchReady -Exe $exe -Model $Model -ModelHint $hint -Port $Port -DryRun:$DryRun
 if ($Kwargs) {
     try { $null = $Kwargs | ConvertFrom-Json -ErrorAction Stop }
     catch { Stop-WithError "-Kwargs is not valid JSON: $Kwargs" }

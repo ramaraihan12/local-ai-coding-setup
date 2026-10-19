@@ -17,43 +17,7 @@
 param([switch]$FimGpu, [switch]$DryRun)   # remaining arguments are in $args -> start-coder.ps1
 
 . (Join-Path $PSScriptRoot 'env.ps1')
-
-# Same PowerShell edition as the caller (pwsh 7 or Windows PowerShell 5.1)
-$psExe = if ($PSVersionTable.PSEdition -eq 'Core') { Join-Path $PSHOME 'pwsh.exe' } else { Join-Path $PSHOME 'powershell.exe' }
-
-function ConvertTo-PsArgs([object[]]$Items) {
-    # parameter names (-Preset, -Ngram) as they are; values become '...' literals
-    (@($Items) | Where-Object { $null -ne $_ } | ForEach-Object {
-        $s = [string]$_
-        if ($s -match '^-[A-Za-z]\w*:?$') { $s } else { "'" + ($s -replace "'", "''") + "'" }
-    }) -join ' '
-}
-
-function Start-AiWindow([string]$Script, [object[]]$ArgList) {
-    $cmd = "& '" + ($Script -replace "'", "''") + "' " + (ConvertTo-PsArgs $ArgList)
-    Write-Host "New window: $cmd" -ForegroundColor Cyan
-    if ($DryRun) { return }
-    # -EncodedCommand avoids quoting problems (JSON in -Kwargs and so on)
-    $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
-    $null = Start-Process -FilePath $psExe -WorkingDirectory $W -PassThru `
-        -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-NoExit', '-EncodedCommand', $enc)
-}
-
-function Test-Health([int]$Port) {
-    try {
-        $r = Invoke-WebRequest "http://127.0.0.1:$Port/health" -UseBasicParsing -TimeoutSec 2
-        return ($r.StatusCode -eq 200)
-    } catch { return $false }
-}
-
-function Wait-Health([int]$Port, [int]$TimeoutSec = 60) {
-    $sw = [Diagnostics.Stopwatch]::StartNew()
-    while ($sw.Elapsed.TotalSeconds -lt $TimeoutSec) {
-        if (Test-Health $Port) { return $true }
-        Start-Sleep -Seconds 1
-    }
-    return $false
-}
+. (Join-Path $PSScriptRoot 'lib-launch.ps1')
 
 # (don't write $x = if (...) { @() }: an empty array becomes $null)
 $fimArgs   = @('-Cpu')
@@ -70,7 +34,7 @@ Write-Host "== Agent mode (FIM $fimTxt) ==" -ForegroundColor Green
 if (Test-Health 8012) {
     Write-Host "FIM :8012 already running, skipped (make sure it is the right kind: $fimTxt; see status-ai.ps1)." -ForegroundColor Yellow
 } else {
-    Start-AiWindow (Join-Path $PSScriptRoot 'start-fim.ps1') $fimArgs
+    Start-AiWindow (Join-Path $PSScriptRoot 'start-fim.ps1') $fimArgs -DryRun:$DryRun
     if (-not $DryRun) {
         Write-Host "Waiting for FIM :8012 (max 60 s)..."
         if (Wait-Health 8012 60) { Write-Host "FIM ready." -ForegroundColor Green }
@@ -79,7 +43,7 @@ if (Test-Health 8012) {
 }
 
 # 2) Main model (extra arguments passed through)
-Start-AiWindow (Join-Path $PSScriptRoot 'start-coder.ps1') $coderArgs
+Start-AiWindow (Join-Path $PSScriptRoot 'start-coder.ps1') $coderArgs -DryRun:$DryRun
 if (-not $DryRun) {
     Write-Host "The main model is loading in a new window. Check with: .\status-ai.ps1"
 }
