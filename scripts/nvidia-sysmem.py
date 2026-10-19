@@ -96,13 +96,17 @@ class SETTING(C.Structure):  # NVDRS_SETTING_V1
                 ("predefinedValue", C.c_ubyte * 4100), ("currentValue", C.c_ubyte * 4100)]
 
 
-assert C.sizeof(SETTING) == 12320 and C.sizeof(PROFILE) == 4116 and C.sizeof(APP4) == 20492
+if (C.sizeof(SETTING), C.sizeof(PROFILE), C.sizeof(APP4)) != (12320, 4116, 20492):
+    raise SystemExit("struct layout does not match the NVAPI headers (is this a 64-bit Python?)")
 SETTING_VER = C.sizeof(SETTING) | (1 << 16)
 PROFILE_VER = C.sizeof(PROFILE) | (1 << 16)
 APP_VER = C.sizeof(APP4) | (4 << 16)
 
 H = C.c_void_p
-_dll = C.CDLL(os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "nvapi64.dll"))
+try:
+    _dll = C.CDLL(os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32", "nvapi64.dll"))
+except OSError:
+    raise SystemExit("NVIDIA driver (nvapi64.dll) not found. This tool needs Windows with an NVIDIA driver installed.")
 _qi = _dll.nvapi_QueryInterface
 _qi.restype = C.c_void_p
 _qi.argtypes = [C.c_uint32]
@@ -155,7 +159,8 @@ def u32(arr):
 
 
 def profile_info(hs, hp):
-    p = PROFILE(); p.version = PROFILE_VER
+    p = PROFILE()
+    p.version = PROFILE_VER
     check(GetProfileInfo(hs, hp, C.byref(p)), "GetProfileInfo")
     return p
 
@@ -178,7 +183,8 @@ def profile_apps(hs, hp):
 
 def get_setting(hs, hp, sid):
     """Returns (rc, SETTING). Internal variant first (0x10ECECC9 is an internal setting), like Profile Inspector."""
-    s = SETTING(); s.version = SETTING_VER
+    s = SETTING()
+    s.version = SETTING_VER
     if GetSettingInt:
         x = C.c_uint32(0)
         rc = GetSettingInt(hs, hp, sid, C.byref(s), C.byref(x))
@@ -189,7 +195,8 @@ def get_setting(hs, hp, sid):
 
 def set_dword(hs, hp, sid, value):
     """NvAPI_DRS_SetSetting; falls back to the internal variant if the public one rejects the ID."""
-    s = SETTING(); s.version = SETTING_VER
+    s = SETTING()
+    s.version = SETTING_VER
     s.settingId = sid
     s.settingType = NVDRS_DWORD_TYPE
     s.currentValue[:4] = list(value.to_bytes(4, "little"))
@@ -199,7 +206,8 @@ def set_dword(hs, hp, sid, value):
     if rc in PRIV_ERRORS or not SetSettingInt:
         raise NvError("NvAPI_DRS_SetSetting", rc)
     first = err(rc)
-    s2 = SETTING(); s2.version = SETTING_VER
+    s2 = SETTING()
+    s2.version = SETTING_VER
     s2.settingId = sid
     s2.settingType = NVDRS_DWORD_TYPE
     s2.currentValue[:4] = list(value.to_bytes(4, "little"))
@@ -229,7 +237,8 @@ def resolve(hs, t, base_handles):
     """Find the profile handle for a target and verify it is exactly the intended profile."""
     hp = H()
     if "app" in t:
-        app = APP4(); app.version = APP_VER
+        app = APP4()
+        app.version = APP_VER
         check(FindApplicationByName(hs, wbuf(t["app"]), C.byref(hp), C.byref(app)),
               f"FindApplicationByName({t['app']})")
         found = app.appName.replace("/", "\\").lower()
