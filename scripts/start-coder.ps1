@@ -42,10 +42,10 @@ param(
 . (Join-Path $PSScriptRoot 'env.ps1')
 
 $modelPaths = @{
-    qwen36 = Join-Path $G 'unsloth\Qwen3.6-35B-A3B-GGUF\Qwen3.6-35B-A3B-UD-IQ2_M.gguf'
-    gptoss = Join-Path $G 'ggml-org\gpt-oss-20b-GGUF\gpt-oss-20b-MXFP4.gguf'
-    gemma  = Join-Path $G 'unsloth\gemma-4-26B-A4B-it-GGUF\gemma-4-26B-A4B-it-UD-IQ3_S.gguf'
-    qwen9b = Join-Path $G 'unsloth\Qwen3.5-9B-GGUF\Qwen3.5-9B-IQ4_XS.gguf'
+    qwen36 = [IO.Path]::Combine($G, 'unsloth\Qwen3.6-35B-A3B-GGUF\Qwen3.6-35B-A3B-UD-IQ2_M.gguf')
+    gptoss = [IO.Path]::Combine($G, 'ggml-org\gpt-oss-20b-GGUF\gpt-oss-20b-MXFP4.gguf')
+    gemma  = [IO.Path]::Combine($G, 'unsloth\gemma-4-26B-A4B-it-GGUF\gemma-4-26B-A4B-it-UD-IQ3_S.gguf')
+    qwen9b = [IO.Path]::Combine($G, 'unsloth\Qwen3.5-9B-GGUF\Qwen3.5-9B-IQ4_XS.gguf')
 }
 # Per-preset defaults (ctx 65536, KV q8_0, FIM on the CPU).
 # NcmoeFimGpu = value used with -FimGpu (only qwen36 is measured; the others repeat the CPU-FIM value).
@@ -89,7 +89,7 @@ function Stop-WithError([string]$Msg) {
 }
 
 # --- Preflight ---
-$exe = Join-Path $L 'llama-server.exe'
+$exe = [IO.Path]::Combine($L, 'llama-server.exe')
 if (-not (Test-Path -LiteralPath $exe)) { Stop-WithError "llama-server not found: $exe" }
 if (-not (Test-Path -LiteralPath $Model)) {
     if (-not $PSBoundParameters.ContainsKey('Model') -and $optionalPresets.ContainsKey($p)) {

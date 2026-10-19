@@ -22,20 +22,20 @@ function Stop-WithError([string]$Msg) {
 }
 
 if ($Cpu) {
-    $Model = Join-Path $G 'ggml-org\Qwen2.5-Coder-0.5B-Q8_0-GGUF\qwen2.5-coder-0.5b-q8_0.gguf'
+    $Model = [IO.Path]::Combine($G, 'ggml-org\Qwen2.5-Coder-0.5B-Q8_0-GGUF\qwen2.5-coder-0.5b-q8_0.gguf')
     # -dev none: don't touch the GPU at all, the VRAM belongs to the main model
     $a = @('-m', $Model, '-ngl', '0', '-dev', 'none', '-c', '4096', '-ub', '1024', '-b', '1024',
            '--cache-reuse', '256', '-t', '4')
     $mode = 'CPU 0.5B'
 } else {
-    $Model = Join-Path $G 'ggml-org\Qwen2.5-Coder-1.5B-Q8_0-GGUF\qwen2.5-coder-1.5b-q8_0.gguf'
+    $Model = [IO.Path]::Combine($G, 'ggml-org\Qwen2.5-Coder-1.5B-Q8_0-GGUF\qwen2.5-coder-1.5b-q8_0.gguf')
     $a = @('-m', $Model, '-ngl', '99', '-c', '8192', '-ub', '1024', '-b', '1024', '--cache-reuse', '256')
     $mode = 'GPU 1.5B'
 }
 $a += @('--host', '127.0.0.1', '--port', "$Port")
 
 # --- Preflight ---
-$exe = Join-Path $L 'llama-server.exe'
+$exe = [IO.Path]::Combine($L, 'llama-server.exe')
 if (-not (Test-Path -LiteralPath $exe)) { Stop-WithError "llama-server not found: $exe" }
 if (-not (Test-Path -LiteralPath $Model)) {
     Stop-WithError "model file missing: $Model`n       (still downloading? the hf download commands are in the README)"
