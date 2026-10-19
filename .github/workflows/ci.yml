@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    # The scripts and the permission gate are Windows-only (paths, NVAPI, PowerShell 5.1/7).
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Permission gate tests
+        run: node tests/permission-gate.test.mjs
+
+      - name: Lint PowerShell scripts
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
+          $results = @(Invoke-ScriptAnalyzer -Path scripts -Recurse -Settings ./PSScriptAnalyzerSettings.psd1)
+          $results | Format-Table ScriptName, Line, RuleName, Message -AutoSize -Wrap
+          if ($results.Count -gt 0) { exit 1 }
+
+      - name: Compile Python helpers
+        run: python -m py_compile scripts/nvidia-sysmem.py configs/pi/mcp-servers/web_search.py
+
+      - name: Dry runs (no llama.cpp or models on the runner)
+        shell: pwsh
+        run: |
+          ./scripts/start-agent.ps1 -DryRun
+          ./scripts/start-fast.ps1 -DryRun -Ctx 16384
