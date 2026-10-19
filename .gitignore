@@ -1,0 +1,37 @@
+# Models and big archives live under AI_ROOT (default C:\AI), never in the repo
+*.gguf
+*.bin
+*.safetensors
+*.zip
+*.7z
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Python / Node
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+
+# Logs, caches, build output
+*.log
+.cache/
+dist/
+build/
+
+# Editor / OS / tool state
+.vscode/
+.idea/
+.claude/
+*.swp
+*~
+*.tmp
+*.bak
+Thumbs.db
+desktop.ini
+.DS_Store
