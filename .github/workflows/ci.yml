@@ -26,11 +26,24 @@ jobs:
           $results | Format-Table ScriptName, Line, RuleName, Message -AutoSize -Wrap
           if ($results.Count -gt 0) { exit 1 }
 
-      - name: Compile Python helpers
-        run: python -m py_compile scripts/nvidia-sysmem.py configs/pi/mcp-servers/web_search.py
+      - name: Lint and compile Python helpers
+        run: |
+          python -m pip install ruff==0.17.1
+          ruff check scripts configs
+          python -m py_compile scripts/nvidia-sysmem.py configs/pi/mcp-servers/web_search.py
 
       - name: Dry runs (no llama.cpp or models on the runner)
         shell: pwsh
         run: |
           ./scripts/start-agent.ps1 -DryRun
           ./scripts/start-fast.ps1 -DryRun -Ctx 16384
+          function Test-DryRun([string[]]$Want, [hashtable]$CoderArgs) {
+            $out = ./scripts/start-coder.ps1 -DryRun @CoderArgs *>&1 | Out-String
+            foreach ($w in $Want) {
+              if ($out -notmatch [regex]::Escape($w)) { throw "start-coder $($CoderArgs.Keys): missing $w in:`n$out" }
+            }
+          }
+          Test-DryRun @('-ncmoe 35', '-lm none') @{ Preset = 'qwen36'; FimGpu = $true }
+          Test-DryRun @('--reasoning off') @{ Preset = 'gemma' }
+          Test-DryRun @('llama-server') @{ Preset = 'qwen9b' }
+          ./scripts/start-fim.ps1 -DryRun -Cpu
