@@ -27,7 +27,6 @@ build/
 # Editor / OS / tool state
 .vscode/
 .idea/
-.claude/
 *.swp
 *~
 *.tmp
