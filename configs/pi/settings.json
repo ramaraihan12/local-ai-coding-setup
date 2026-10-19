@@ -1,0 +1,27 @@
+{
+  "defaultProvider": "llamacpp",
+  "defaultModel": "local",
+  "enabledModels": ["llamacpp/local", "ollama/qwen3.5-9b:iq4xs"],
+  "enableInstallTelemetry": false,
+  "enableAnalytics": false,
+  "extensions": ["-builtin:llama.cpp"],
+  "defaultTools": ["+grep", "+find", "+ls"],
+  "skills": ["!**/.agents/skills/**"],
+  "packages": [
+    {
+      "source": "git:github.com/obra/superpowers@v7.0.0",
+      "extensions": [],
+      "skills": [
+        "using-superpowers",
+        "brainstorming",
+        "writing-plans",
+        "executing-plans",
+        "test-driven-development",
+        "systematic-debugging",
+        "verification-before-completion",
+        "receiving-code-review",
+        "finishing-a-development-branch"
+      ]
+    }
+  ]
+}
